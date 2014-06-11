@@ -14,6 +14,7 @@
 #
 LOCAL_PATH := $(call my-dir)
 
+## this is how we can build multiple .so libraries
 #include $(CLEAR_VARS)
 #LOCAL_MODULE := xlog
 #LOCAL_SRC_FILES += xlog/xlog.c
@@ -26,8 +27,11 @@ include $(CLEAR_VARS)
 LOCAL_MODULE    := example
 #LOCAL_SHARED_LIBRARIES := xlog    # this makes libmod1.so dependent on libmod2.so
 LOCAL_SRC_FILES := \
-  reDroid/nowchart.c reDroid/dump.cpp reDroid/re_qobj.c reDroid/re_rtti.c reDroid/re_tools.c reDroid/re_encounter.c
+  reDroid/nowchart.c reDroid/dump.cpp reDroid/re_qobj.c reDroid/re_rtti.c reDroid/re_tools.c reDroid/re_encounter.c re_mprot.c
+# linking with a library in NDK
 LOCAL_LDLIBS := -llog
+# a hack to link against Qt
+LOCAL_LDLIBS += -L$(LOCAL_PATH)/lib -lQtCore
 LOCAL_CPPFLAGS += -fexceptions
 include $(BUILD_SHARED_LIBRARY)    # this actually builds libexample.so
 

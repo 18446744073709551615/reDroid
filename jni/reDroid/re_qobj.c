@@ -96,7 +96,7 @@ DLOG("#########");
     for (i = onlyNew ? methodOffset : 0; i< nMethods; i++) {
         struct QMetaMethod qmm = {0,0};
         _ZNK11QMetaObject6methodEi(&qmm, q, i);
-        char* signature = _ZNK11QMetaMethod9signatureEv(&qmm);
+        char* signature = (void*)_ZNK11QMetaMethod9signatureEv(&qmm);
         DLOG("### %i 0x%x [%s]",i,i,signature);
     }
 //    DLOG("######### end =============");
