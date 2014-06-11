@@ -19,6 +19,13 @@ struct QMetaObject {
         const struct qmetaobjectdata /*unsigned int*/ *data;
         const struct QMetaObject **extradata;
 };
+
+struct QMetaMethod {
+ struct QMetaObject* mobj;
+ unsigned int handle;
+// int a,b,c,d;
+};
+
 /*
 struct QMetaObjectPrivate
 {
@@ -53,13 +60,66 @@ int isValidQMetaObject(void*p) {
         && isValidPtr(pm->data,sizeof(struct qmetaobjectdata))
         ;
 }
+
+// no different from _ZNK11QMetaObject12methodOffsetEv()
+int xxMethodOffset(struct QMetaObject const* q) { // same as _ZNK11QMetaObject12methodOffsetEv
+    int offset = 0;
+    const struct QMetaObject *m = q->superdata;
+    while (m) {
+        offset += m->data->n_methods;
+        m = m->superdata;
+    }
+    return offset;
+}
+
+void log_methods_x(struct QMetaObject const* q, int onlyNew) {
+#if 0
+    int i;
+// does not really work
+    int n,off;
+log_dumpf("data: %s",q->data,0xC0,0x40);
+log_dumpf("stringdata: %s",q->stringdata,0x4000,0x40);
+    for(i=0, n=q->data->n_methods, off=q->data->n_methods; i<n; i++) {
+        DLOG("-----------q--[%s]",q->stringdata+off);
+        off += 1+strlen(q->stringdata+off);
+    }
+DLOG("######### [%s]",q->stringdata);
+DLOG("######### methods: %x",q->data->n_methods);
+DLOG("#########");
+#endif
+//    DLOG("\n\n\n#############################################\n\n");
+    int nMethods = _ZNK11QMetaObject11methodCountEv(q);
+    //int xmethodOffset = xxMethodOffset(q);
+    int methodOffset = _ZNK11QMetaObject12methodOffsetEv(q);
+    DLOG("### -- methodCount = 0x%x  methodOffset = 0x%x --",nMethods, methodOffset);
+    int i;
+    for (i = onlyNew ? methodOffset : 0; i< nMethods; i++) {
+        struct QMetaMethod qmm = {0,0};
+        _ZNK11QMetaObject6methodEi(&qmm, q, i);
+        char* signature = _ZNK11QMetaMethod9signatureEv(&qmm);
+        DLOG("### %i 0x%x [%s]",i,i,signature);
+    }
+//    DLOG("######### end =============");
+}
+void log_methods_all(struct QMetaObject const* q) {
+    log_methods_x(q,0);
+}
+void log_methods_new(struct QMetaObject const* q) {
+    log_methods_x(q,1);
+}
+
 void logQMetaObject(void* p) {
 DLOG("\n\n\n~~~~~~~~~~~~~~~~~~~~~~~ logQMetaObject(%p)",p);
     struct QMetaObject* pm = p;
     if (isValidQMetaObject(p)) {
         DLOG("QMetaObject name:[%s]",pm->stringdata);
+        log_methods_new(pm);
         struct QMetaObject const* q = pm->superdata;
-        while(q) { DLOG("==q==> %s",q->stringdata); q = q->superdata;}
+        while(q) {
+            DLOG("==q==> %s",q->stringdata);
+            log_methods_new(q);
+            q = q->superdata;
+        }
         log_dumpf("QMetaObject: %s",pm,0x80, 0x80);
         log_dumpf("QMO stringdata: %s",pm->stringdata,0x80,0x80);
     } else {

@@ -8,7 +8,7 @@
 
 inline char hdigit(int n){return "0123456789abcdef"[n&0xf];};
 
-#define LEN_LIMIT 8
+#define LEN_LIMIT 32
 #define SUBSTITUTE_CHAR '`'
 
 static const char* dumpline(char*dest, int linelen, const char*src, const char*srcend)
